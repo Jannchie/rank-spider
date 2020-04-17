@@ -39,7 +39,7 @@ if __name__ == "__main__":
   s = HotSearchSpider("知乎热搜")
   sc = SimpyderConfig()
   sc.COOKIE = FAKE_UA
-  sc.DOWNLOAD_INTERVAL = 1
+  sc.DOWNLOAD_INTERVAL = 600
   sc.PARSE_THREAD_NUMER = 1
   s.set_config(sc)
   s.run()
