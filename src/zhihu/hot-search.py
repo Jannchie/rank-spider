@@ -3,7 +3,7 @@ from simpyder import Spider, FAKE_UA, SimpyderConfig
 from datetime import datetime
 import os
 MONGO_URL = os.environ['MONGO_URL']
-db = pymongo.MongoClient(MONGO_URL)
+db = pymongo.MongoClient()
 
 
 class HotSearchSpider(Spider):
@@ -27,7 +27,7 @@ class HotSearchSpider(Spider):
 
   def save(self, item):
     for e in item:
-      db.zhihu.hot.insert({
+      db.zhihu.hot.insert_one({
           'title': e[0],
           'value': e[1],
           'date': e[2]
@@ -39,7 +39,7 @@ if __name__ == "__main__":
   s = HotSearchSpider("知乎热搜")
   sc = SimpyderConfig()
   sc.COOKIE = FAKE_UA
-  sc.DOWNLOAD_INTERVAL = 600
+  sc.DOWNLOAD_INTERVAL = 15 * 60
   sc.PARSE_THREAD_NUMER = 1
   s.set_config(sc)
   s.run()

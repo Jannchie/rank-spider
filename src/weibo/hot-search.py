@@ -1,22 +1,22 @@
+import ssl
 import os
 from simpyder.spiders import AsynSpider
+from simpyder import Spider, FAKE_UA, SimpyderConfig
 import pymongo
 import datetime
 url = 'https://s.weibo.com/top/summary?cate=realtimehot'
 
+ssl._create_default_https_context = ssl._create_unverified_context
 MONGO_URL = os.environ['MONGO_URL']
-db = pymongo.MongoClient(MONGO_URL)
+db = pymongo.MongoClient()
 
 
-class WeiboHotSearchSpider(AsynSpider):
-  def __init__(self):
-    super().__init__(name="weibo spider", interval=3600, concurrency=1)
-
+class WeiboHotSearchSpider(Spider):
   def gen_url(self):
     while True:
       yield url
 
-  async def parse(self, res):
+  def parse(self, res):
     date = datetime.datetime.utcnow()
     data = res.xpath('/html/body/div[1]/div[2]/div[2]/table/tbody/tr')
     items = []
@@ -35,12 +35,11 @@ class WeiboHotSearchSpider(AsynSpider):
         self.logger.exception(e)
       pass
     return items
-    pass
 
-  async def save(self, items):
+  def save(self, items):
     c = 0
     for item in items:
-      db.weibo.hot.insert({
+      db.weibo.hot.insert_one({
           'name': item[0],
           'value': item[1],
           'type': item[2],
@@ -52,5 +51,10 @@ class WeiboHotSearchSpider(AsynSpider):
 
 
 if __name__ == "__main__":
-  s = WeiboHotSearchSpider()
+  s = WeiboHotSearchSpider("微博热搜")
+  sc = SimpyderConfig()
+  sc.COOKIE = FAKE_UA
+  sc.DOWNLOAD_INTERVAL = 15 * 60
+  sc.PARSE_THREAD_NUMER = 1
+  s.set_config(sc)
   s.run()
