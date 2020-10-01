@@ -1,17 +1,18 @@
 import pymongo
-from simpyder import Spider, FAKE_UA, SimpyderConfig
+from simpyder import FAKE_UA, SimpyderConfig
+from simpyder.spiders import AsynSpider
 from datetime import datetime
 import os
 MONGO_URL = os.environ['MONGO_URL']
 db = pymongo.MongoClient()
 
 
-class HotSearchSpider(Spider):
-  def gen_url(self):
+class HotSearchSpider(AsynSpider):
+  async def gen_url(self):
     while True:
       yield "https://www.zhihu.com/billboard"
 
-  def parse(self, response):
+  async def parse(self, response):
     data = response.xpath('//div[@class="HotList-itemBody"]')
     date = datetime.utcnow()
     items = []
@@ -25,21 +26,20 @@ class HotSearchSpider(Spider):
         self.logger.exception(e)
     return items
 
-  def save(self, item):
+  async def save(self, item):
     for e in item:
-      db.zhihu.hot.insert_one({
-          'title': e[0],
-          'value': e[1],
-          'date': e[2]
-      })
-    return e
+      try:
+        db.zhihu.hot.insert_one({
+            'title': e[0],
+            'value': e[1],
+            'date': e[2]
+        })
+      except Exception as e:
+        self.logger.exception(e)
+    return len(item)
 
 
 if __name__ == "__main__":
-  s = HotSearchSpider("知乎热搜")
-  sc = SimpyderConfig()
-  sc.COOKIE = FAKE_UA
-  sc.DOWNLOAD_INTERVAL = 15 * 60
-  sc.PARSE_THREAD_NUMER = 1
-  s.set_config(sc)
+  s = HotSearchSpider(name="zhihu spider", user_agent=FAKE_UA,
+                      interval=60 * 30, concurrency=1)
   s.run()

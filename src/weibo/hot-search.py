@@ -7,16 +7,17 @@ import datetime
 url = 'https://s.weibo.com/top/summary?cate=realtimehot'
 
 ssl._create_default_https_context = ssl._create_unverified_context
-MONGO_URL = os.environ['MONGO_URL']
-db = pymongo.MongoClient()
+BILIOB_MONGO_URL = os.environ['BILIOB_MONGO_URL']
+db = pymongo.MongoClient(BILIOB_MONGO_URL)
 
 
-class WeiboHotSearchSpider(Spider):
-  def gen_url(self):
+class WeiboHotSearchSpider(AsynSpider):
+
+  async def gen_url(self):
     while True:
       yield url
 
-  def parse(self, res):
+  async def parse(self, res):
     date = datetime.datetime.utcnow()
     data = res.xpath('/html/body/div[1]/div[2]/div[2]/table/tbody/tr')
     items = []
@@ -36,7 +37,7 @@ class WeiboHotSearchSpider(Spider):
       pass
     return items
 
-  def save(self, items):
+  async def save(self, items):
     c = 0
     for item in items:
       db.weibo.hot.insert_one({
@@ -47,14 +48,8 @@ class WeiboHotSearchSpider(Spider):
       c += 1
     return c
 
-    pass
-
 
 if __name__ == "__main__":
-  s = WeiboHotSearchSpider("微博热搜")
-  sc = SimpyderConfig()
-  sc.COOKIE = FAKE_UA
-  sc.DOWNLOAD_INTERVAL = 15 * 60
-  sc.PARSE_THREAD_NUMER = 1
-  s.set_config(sc)
+  s = WeiboHotSearchSpider(
+      name="weibo spider", user_agent=FAKE_UA, interval=60 * 30, concurrency=1)
   s.run()
