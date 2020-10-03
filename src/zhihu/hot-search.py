@@ -4,8 +4,8 @@ from simpyder.spiders import AsynSpider
 from datetime import datetime
 import asyncio
 import os
-MONGO_URL = os.environ['BILIOB_MONGO_URL']
-db = pymongo.MongoClient()
+BILIOB_MONGO_URL = os.environ['BILIOB_MONGO_URL']
+db = pymongo.MongoClient(BILIOB_MONGO_URL)
 
 
 class HotSearchSpider(AsynSpider):
