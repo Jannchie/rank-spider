@@ -2,8 +2,9 @@ import pymongo
 from simpyder import FAKE_UA, SimpyderConfig
 from simpyder.spiders import AsynSpider
 from datetime import datetime
+import asyncio
 import os
-MONGO_URL = os.environ['MONGO_URL']
+MONGO_URL = os.environ['BILIOB_MONGO_URL']
 db = pymongo.MongoClient()
 
 
@@ -11,6 +12,7 @@ class HotSearchSpider(AsynSpider):
   async def gen_url(self):
     while True:
       yield "https://www.zhihu.com/billboard"
+      await asyncio.sleep(20)
 
   async def parse(self, response):
     data = response.xpath('//div[@class="HotList-itemBody"]')

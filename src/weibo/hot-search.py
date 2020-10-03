@@ -4,6 +4,7 @@ from simpyder.spiders import AsynSpider
 from simpyder import Spider, FAKE_UA, SimpyderConfig
 import pymongo
 import datetime
+import asyncio
 url = 'https://s.weibo.com/top/summary?cate=realtimehot'
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -16,6 +17,7 @@ class WeiboHotSearchSpider(AsynSpider):
   async def gen_url(self):
     while True:
       yield url
+      await asyncio.sleep(20)
 
   async def parse(self, res):
     date = datetime.datetime.utcnow()
