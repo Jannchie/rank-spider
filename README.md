@@ -1,3 +1,3 @@
-# zhihu-spider
+# Rank Spider
 
-data crawler of www.zhihu.com
+Spider for Rank Lists
